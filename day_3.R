@@ -1,6 +1,10 @@
 library(tidyverse)
 library(glue)
 
+source('AoC functions.R')
+
+download_advent(2021,
+                3)
 
 df <- tibble(value = read_lines('Data/input3.txt'))
 
