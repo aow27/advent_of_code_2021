@@ -22,8 +22,8 @@ download_advent <- function(year,
       system()
     
     message(glue::glue('A file at "data/input{year}_{day}.txt" has now been created - enjoy!'))
-    rm(cookie,
-       .GlobalEnv)
+
+    if(exists('cookie')) rm(cookie, envir = .GlobalEnv)
     
   }
   
