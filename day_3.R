@@ -1,16 +1,16 @@
 library(tidyverse)
+library(glue)
 
 
 df <- tibble(value = read_lines('Data/input3.txt'))
 
+n_bits <- nchar(df[1,])
 
-nchar(df[1,])
-#12 bits
 
 bits <- df %>% 
   separate(value,
            sep = '(?<=(0|1))',
-           into = paste0('col_', 1:12)) %>% 
+           into = paste0('col_', 1:n_bits)) %>% 
   mutate(across(everything(),
                 as.numeric))
 
@@ -20,7 +20,7 @@ df_1 <- bits %>%
                    sum)) %>% 
   t() %>% 
   as_tibble(rownames = 'bit') %>% 
-  mutate(most_common = ifelse(V1 > 500,
+  mutate(most_common = ifelse(V1 > nrow(df)/2,
                                    1,
                                    0),
          least_common = (most_common + 1) %% 2)
@@ -39,24 +39,40 @@ epsilon <- df_1 %>%
 gamma*epsilon
 
 
-# Part 2 - still not correct - saving thoughts ------------------------------------------------------------------
+# Part 2 ------------------------------------------------------------------
 
-oxy_number <- bits
-co_number <- bits
-
-for (i in 1:12) {
+for (i in 1:n_bits) {
+  
+  if(i==1) {
+    oxy_number <- bits
+    co_number <- bits
+  }
   
   if (nrow(oxy_number) != 1) {  
     oxy_number <<- oxy_number %>% 
+      mutate(col_sum = sum(!!sym(glue("col_{i}"))),
+             col_filter = ifelse(col_sum/n() >= 0.5,
+                                  1,
+                                 0)) %>% 
+               
       filter(across(glue::glue('col_{i}'),
-                    ~ . ==  df_1$most_common[i]))
+                    ~ . ==  col_filter)) %>% 
+      select(-c(col_sum,
+                col_filter))
     
   }
   
   if (nrow(co_number) != 1) {  
     co_number <<- co_number %>% 
+      mutate(col_sum = sum(!!sym(glue("col_{i}"))),
+             col_filter = ifelse(col_sum/n() >= 0.5,
+                                 0,
+                                 1)) %>% 
+      
       filter(across(glue::glue('col_{i}'),
-                    ~ . ==  df_1$least_common[i]))
+                    ~ . ==  col_filter))%>% 
+      select(-c(col_sum,
+                col_filter))
     
     
   }
