@@ -6,20 +6,18 @@
 
 download_advent <- function(year,
                            day){
-  if(!exists('cookie')){
-    message("The cookie input isn't loaded, please make sure you have a cookie variable with your AoC session cookie")
-  
-    break
-  }
   
   if(file.exists(glue::glue('data/input{year}_{day}.txt'))){
     message('This file has already been downloaded from the AoC servers - no need to download again')
     
-    rm(cookie,
-       envir = .GlobalEnv)
+    if(exists('cookie')) rm(cookie, envir = .GlobalEnv)
     
-    input <<- tibble(read_lines(glue::glue('data/input{year}_{day}.txt')))
   } else {
+    if(!exists('cookie')){
+      message("The cookie input isn't loaded, please make sure you have a cookie variable with your AoC session cookie")
+      
+      break
+    }
     glue::glue('curl "https://adventofcode.com/{year}/day/{day}/input" -H "cookie: session={cookie}" -o "data/input{year}_{day}.txt" 2>/dev/null') %>% 
       system()
     
@@ -27,7 +25,8 @@ download_advent <- function(year,
     rm(cookie,
        .GlobalEnv)
     
-    input <<- tibble(read_lines(glue::glue('data/input{year}_{day}.txt')))
-    
   }
+  
+  input <<- tibble::tibble(readr::read_lines(glue::glue('data/input{year}_{day}.txt')))
+  
 }
