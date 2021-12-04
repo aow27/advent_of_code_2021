@@ -1,14 +1,16 @@
-# A function that will automatically download the input for a given day and year and input it into the 
-# folder data, and then creates a variable input with the global environment
+# A function that will  download the input for a given day and year and input it into the 
+# folder called data if it doesn't exist already, and then creates a tibble called input within the global environment 
+
 
 # Requires knowing the AoC session cookie, which is typically found in the storage section of a web inspector
 # I've then saved this in my Rprofile file which isn't publically shared
 
 download_advent <- function(year,
-                           day){
+                            day){
   
   if(file.exists(glue::glue('data/input{year}_{day}.txt'))){
-    message('This file has already been downloaded from the AoC servers - no need to download again')
+    message('This file has already been downloaded from the AoC servers - no need to download again/n
+            The stored file in the folder has been read in as a tibble called input.')
     
     if(exists('cookie')) rm(cookie, envir = .GlobalEnv)
     
@@ -21,12 +23,13 @@ download_advent <- function(year,
     glue::glue('curl "https://adventofcode.com/{year}/day/{day}/input" -H "cookie: session={cookie}" -o "data/input{year}_{day}.txt" 2>/dev/null') %>% 
       system()
     
-    message(glue::glue('A file at "data/input{year}_{day}.txt" has now been created - enjoy!'))
+    message(glue::glue('A file at "data/input{year}_{day}.txt" has now been created - enjoy!/n
+            The new file in the folder has been read in as a tibble called input.'))
 
     if(exists('cookie')) rm(cookie, envir = .GlobalEnv)
     
   }
   
-  input <<- tibble::tibble(readr::read_lines(glue::glue('data/input{year}_{day}.txt')))
+  input <<- tibble::tibble(value = readr::read_lines(glue::glue('data/input{year}_{day}.txt')))
   
 }
