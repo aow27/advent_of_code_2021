@@ -9,7 +9,7 @@ download_advent <- function(year,
                             day){
   
   if(file.exists(glue::glue('data/input{year}_{day}.txt'))){
-    message('This file has already been downloaded from the AoC servers - no need to download again/n
+    message('This file has already been downloaded from the AoC servers - no need to download again
             The stored file in the folder has been read in as a tibble called input.')
     
     if(exists('cookie')) rm(cookie, envir = .GlobalEnv)
@@ -23,7 +23,7 @@ download_advent <- function(year,
     glue::glue('curl "https://adventofcode.com/{year}/day/{day}/input" -H "cookie: session={cookie}" -o "data/input{year}_{day}.txt" 2>/dev/null') %>% 
       system()
     
-    message(glue::glue('A file at "data/input{year}_{day}.txt" has now been created - enjoy!/n
+    message(glue::glue('A file at "data/input{year}_{day}.txt" has now been created - enjoy!
             The new file in the folder has been read in as a tibble called input.'))
 
     if(exists('cookie')) rm(cookie, envir = .GlobalEnv)
