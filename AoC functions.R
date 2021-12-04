@@ -3,7 +3,7 @@
 
 
 # Requires knowing the AoC session cookie, which is typically found in the storage section of a web inspector
-# I've then saved this in my Rprofile file which isn't publically shared
+# I've then saved this in my Rprofile file which isn't publicly shared
 
 download_advent <- function(year,
                             day){
