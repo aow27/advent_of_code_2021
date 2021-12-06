@@ -4,7 +4,7 @@ library(tictoc)
 input = tibble(value = read_delim("Data/inpu6.txt",
                                   ',',
                                   col_names = F)) 
-{state_start <- input_test %>% 
+{state_start <- input %>% 
   t() %>% 
   as_tibble() %>%
   rename(start = V1)
