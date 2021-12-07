@@ -39,3 +39,4 @@ differences  %>%
   distinct(sum) %>% 
   pull()
 
+# 99540554
