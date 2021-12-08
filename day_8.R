@@ -1,7 +1,9 @@
 library(tidyverse)
 
-input <- tibble(value = read_lines('Data/input8.txt'))
+source('AoC functions.R')
 
+download_advent(2021,
+                8)
 
 input %>% 
   separate(value, sep = ' \\| ', into = c('sig_patterns', 'output_val')) %>% 
@@ -120,7 +122,7 @@ df_1 <- df %>%
                                    c(pattern_6_1,
                                      pattern_6_2,
                                      pattern_6_3),
-                                   pos_a), # Compare 9 and 4, removing pos a to gether pos g
+                                   pos_a), # Compare 9 and 4, removing pos a to get pos g
          num_9 = mult_options(num_4,
                               c(pattern_6_1,
                                 pattern_6_2,
@@ -136,12 +138,6 @@ df_1 <- df %>%
                                 pattern_5_2,
                                 pattern_5_3),
                               c(pos_a, pos_g)), # Compare 3 to 1 removing pos a and pos g to  get pos d
-         num_3 = mult_options(num_1,
-                              c(pattern_5_1,
-                                pattern_5_2,
-                                pattern_5_3),
-                              c(pos_a, pos_g),
-                              output = 'pos'), 
          
          
          pos_b = string_compare(num_4,
@@ -178,7 +174,7 @@ df_1 <- df %>%
                               c(pattern_5_1,
                                 pattern_5_2,
                                 pattern_5_3),
-                              c(pos_b, pos_c, pos_e),
+                              c(pos_b, pos_c, pos_f),
                               output = 'pos'),
          
          num_5 = mult_options(num_8,
@@ -187,27 +183,33 @@ df_1 <- df %>%
                                 pattern_5_3),
                               c(pos_b, pos_c, pos_e),
                               output = 'pos'),
+         num_3 = c(pattern_5_1,
+                   pattern_5_2,
+                   pattern_5_3)[((num_2 == c(pattern_5_1,
+                                              pattern_5_2,
+                                              pattern_5_3)) + 
+                                   (num_5 == c(pattern_5_1,
+                                                pattern_5_2,
+                                                pattern_5_3))) + 1 %% 2]
          
          
          
   ) %>% 
-  ungroup
+  ungroup()  
 
-df_1 %>% 
-  select(starts_with('pos'),
-         starts_with('num')) %>% 
-  mutate(check = str_c( pos_a, pos_g, pos_e, pos_d, pos_b, pos_c, pos_f),
-         checks = str_detect(check, '([a-z])\1')) %>% 
-  pull(checks) %>% sum()
+#  aaaa      ....      aaaa      ....
+# b    c    .    c    .    c    b    c
+# b    c    .    c    .    c    b    c
+#  dddd      ....      ....      dddd
+# e    f    .    f    .    f    .    f
+# e    f    .    f    .    f    .    f
+#  gggg      ....      ....      ....
+ 
 
-df_1 %>% 
-  select(starts_with('num')) %>% 
-  mutate(id = row_number(),
-         nums = across(1:10,
-                ~ str_extract_all(., pattern = '') %>% 
-                  str_sort(unlist(.))))
+# got a (compare 1 and 7)
+# got g (compare 4 with 6 lines)
 
-#     0:DONE  1:DONE  2:      3:DONE  4:DONE
+#     0:     1:DONE  2:      3:      4:DONE
 #      aaaa    ....    aaaa    aaaa    ....
 #     b    c  .    c  .    c  .    c  b    c
 #     b    c  .    c  .    c  .    c  b    c
@@ -217,7 +219,7 @@ df_1 %>%
 #      gggg    ....    gggg    gggg    ....
 #     
 
-#     5:      6:DONE  7:DONE  8:DONE  9:DONE
+#     5:      6:     7:DONE  8:DONE  9:    
 #      aaaa    aaaa    aaaa    aaaa    aaaa
 #     b    .  b    .  .    c  b    c  b    c
 #     b    .  b    .  .    c  b    c  b    c
@@ -225,5 +227,65 @@ df_1 %>%
 #     .    f  e    f  .    f  e    f  .    f
 #     .    f  e    f  .    f  e    f  .    f
 #      gggg    gggg    ....    gggg    gggg
+
+df_1 %>% 
+  select(starts_with('pos'),
+         starts_with('num')) %>% 
+  mutate(check = str_c( pos_a, pos_g, pos_e, pos_d, pos_b, pos_c, pos_f),
+         checks = str_detect(check, '([a-z])\1')) %>% 
+  pull(checks) %>% sum()
+
+
+df_2 <- df_1 %>% 
+  select(starts_with('num')) %>% 
+  mutate(id = row_number()) %>% 
+  rowwise() %>% 
+  mutate(across(1:10,
+                ~ str_split(., pattern = '')),
+         across(1:10,
+                ~ list(str_sort(., pattern = ''))),
+         across(1:10,
+                ~ list(str_c(., collapse = '')))) %>% 
+  unnest(num_1:num_5)
+
+numbers <- colnames(df_2)[1:10] %>% 
+  str_remove('num_') %>% 
+  as.numeric()
+
+output <- input %>% 
+  separate(value, sep = ' \\| ', into = c('sig_patterns', 'output_val')) %>% 
+  mutate(across(c('sig_patterns', 'output_val'),
+                str_trim)
+  ) %>% 
+  transmute(output_num = str_extract_all(output_val, '[a-z]+'),
+            id = row_number()) %>% 
+  unnest_wider(output_num, names_sep = '_') %>% 
+  rowwise() %>% 
+  mutate(across(1:4,
+                ~ str_split(., pattern = '')),
+         across(1:4,
+                ~ list(str_sort(., pattern = ''))),
+         across(1:4,
+                ~ list(str_c(., collapse = '')))) %>% 
+  unnest(output_num_1:output_num_4)
+
+df_2 %>% 
+  left_join(output, by = 'id') %>% 
+  nest(data = c(num_1, num_7, num_4, num_8, num_9, num_3, num_6, num_0, num_2, 
+                num_5)) %>% 
+  rowwise() %>% 
+  mutate(which_1 = list(numbers[which(output_num_1 %in% data)]),
+         which_2 = list(numbers[which(output_num_2 %in% data)]),
+         which_3 = list(numbers[which(output_num_3 %in% data)]),
+         which_4 = list(numbers[which(output_num_4 %in% data)])) 
+
+
+
+  unnest_wider(which_1, names_sep = '_') %>% 
+  unnest_wider(which_2, names_sep = '_') %>% 
+  unnest_wider(which_3, names_sep = '_') %>% 
+  unnest_wider(which_4, names_sep = '_')
+
+
 
 
