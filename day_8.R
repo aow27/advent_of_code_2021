@@ -12,7 +12,7 @@ input %>%
   summarise(sum(output_num))
 
 
-# Part 2 - NOT COMPLETE ------------------------------------------------------------------
+# Part 2 ------------------------------------------------------------------
 
 
 # Compare 9 and 4, removing pos a to gether pos g
@@ -99,48 +99,131 @@ df <- input %>%
   unnest_wider(pattern, names_sep = '_') %>% 
   unnest_wider(output_num, names_sep = '_')  %>% 
   select(-c(sig_patterns, output_val)) %>% 
-  rename(pattern_7   = pattern_2,
-         pattern_4   = pattern_3,
+  rename(num_1   = pattern_1,
+         num_7   = pattern_2,
+         num_4   = pattern_3,
          pattern_5_1 = pattern_4,
          pattern_5_2 = pattern_5,
          pattern_5_3 = pattern_6,
          pattern_6_1 = pattern_7,
          pattern_6_2 = pattern_8,
          pattern_6_3 = pattern_9,
-         pattern_8   = pattern_10,
+         num_8   = pattern_10,
          )
 
 df_1 <- df %>% 
   rowwise() %>% 
-  mutate(pos_a = string_compare(pattern_7,
-                                pattern_1), # Logic: compare 7 and 1 to get top bar
+  mutate(pos_a = string_compare(num_7,
+                                num_1), # Logic: compare 7 and 1 to get top bar
          
-         pos_g = mult_options(pattern_4,
+         pos_g = mult_options(num_4,
                                    c(pattern_6_1,
                                      pattern_6_2,
                                      pattern_6_3),
                                    pos_a), # Compare 9 and 4, removing pos a to gether pos g
-         num_9 = mult_options(pattern_4,
+         num_9 = mult_options(num_4,
                               c(pattern_6_1,
                                 pattern_6_2,
                                 pattern_6_3),
                               pos_a,
-                              output = 'pos'),
+                              output = 'pos'), # Compare 8 and 9 to get pos e
          
-         pos_d = mult_options(pattern_1,
+         pos_e = string_compare(num_8,
+                                num_9),
+         
+         pos_d = mult_options(num_1,
                               c(pattern_5_1,
                                 pattern_5_2,
                                 pattern_5_3),
                               c(pos_a, pos_g)), # Compare 3 to 1 removing pos a and pos g to  get pos d
-         num_3 = mult_options(pattern_1,
+         num_3 = mult_options(num_1,
                               c(pattern_5_1,
                                 pattern_5_2,
                                 pattern_5_3),
                               c(pos_a, pos_g),
                               output = 'pos'), 
          
-         pos_e = string_compare(pattern_8,
-                                num_9), # Compare 8 and 9 to get pos e
          
-         ######### ADD OTHER POSITIONS AND THEN WORK OUT NUMBERS
-  ) 
+         pos_b = string_compare(num_4,
+                                num_1,
+                                remove = pos_d), # compare 1 and 4 removing d to get b
+         
+         pos_c = mult_options(num_8,
+                              c(pattern_6_1,
+                                pattern_6_2,
+                                pattern_6_3),
+                              c(pos_e, pos_d)), # compare 8 and those with 6 lines, removing lines that are used to get to 9 and 0
+         
+         num_6 = mult_options(num_8,
+                              c(pattern_6_1,
+                                pattern_6_2,
+                                pattern_6_3),
+                              c(pos_e, pos_d),
+                              output = 'pos'),
+         
+         num_0 = mult_options(num_8,
+                              c(pattern_6_1,
+                                pattern_6_2,
+                                pattern_6_3),
+                              c(pos_e, pos_c),
+                              output = 'pos'), # compare 8 and those with 6 lines, removing lines that are used to get to 9 and 
+         
+         pos_f = mult_options(num_8,
+                              c(pattern_5_1,
+                                pattern_5_2,
+                                pattern_5_3),
+                              c(pos_b, pos_c, pos_e)), # compare 8 with 5 lines removing lines that make 5 2 and 3
+         
+         num_2 = mult_options(num_8,
+                              c(pattern_5_1,
+                                pattern_5_2,
+                                pattern_5_3),
+                              c(pos_b, pos_c, pos_e),
+                              output = 'pos'),
+         
+         num_5 = mult_options(num_8,
+                              c(pattern_5_1,
+                                pattern_5_2,
+                                pattern_5_3),
+                              c(pos_b, pos_c, pos_e),
+                              output = 'pos'),
+         
+         
+         
+  ) %>% 
+  ungroup
+
+df_1 %>% 
+  select(starts_with('pos'),
+         starts_with('num')) %>% 
+  mutate(check = str_c( pos_a, pos_g, pos_e, pos_d, pos_b, pos_c, pos_f),
+         checks = str_detect(check, '([a-z])\1')) %>% 
+  pull(checks) %>% sum()
+
+df_1 %>% 
+  select(starts_with('num')) %>% 
+  mutate(id = row_number(),
+         nums = across(1:10,
+                ~ str_extract_all(., pattern = '') %>% 
+                  str_sort(unlist(.))))
+
+#     0:DONE  1:DONE  2:      3:DONE  4:DONE
+#      aaaa    ....    aaaa    aaaa    ....
+#     b    c  .    c  .    c  .    c  b    c
+#     b    c  .    c  .    c  .    c  b    c
+#      ....    ....    dddd    dddd    dddd
+#     e    f  .    f  e    .  .    f  .    f
+#     e    f  .    f  e    .  .    f  .    f
+#      gggg    ....    gggg    gggg    ....
+#     
+
+#     5:      6:DONE  7:DONE  8:DONE  9:DONE
+#      aaaa    aaaa    aaaa    aaaa    aaaa
+#     b    .  b    .  .    c  b    c  b    c
+#     b    .  b    .  .    c  b    c  b    c
+#      dddd    dddd    ....    dddd    dddd
+#     .    f  e    f  .    f  e    f  .    f
+#     .    f  e    f  .    f  e    f  .    f
+#      gggg    gggg    ....    gggg    gggg
+
+
