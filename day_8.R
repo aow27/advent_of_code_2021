@@ -170,69 +170,39 @@ df_1 <- df %>%
                                 pattern_5_3),
                               c(pos_b, pos_c, pos_e)), # compare 8 with 5 lines removing lines that make 5 2 and 3
          
+         
+         num_3 = mult_options(num_1,
+                              c(pattern_5_1,
+                                pattern_5_2,
+                                pattern_5_3),
+                              c(pos_a, pos_g),
+                              output = 'pos'),
+         
          num_2 = mult_options(num_8,
                               c(pattern_5_1,
                                 pattern_5_2,
                                 pattern_5_3),
-                              c(pos_b, pos_c, pos_f),
+                              c(pos_b, pos_c, pos_e),
                               output = 'pos'),
          
          num_5 = mult_options(num_8,
                               c(pattern_5_1,
                                 pattern_5_2,
                                 pattern_5_3),
-                              c(pos_b, pos_c, pos_e),
+                              c(pos_b, pos_e, pos_f),
                               output = 'pos'),
-         num_3 = c(pattern_5_1,
-                   pattern_5_2,
-                   pattern_5_3)[((num_2 == c(pattern_5_1,
-                                              pattern_5_2,
-                                              pattern_5_3)) + 
-                                   (num_5 == c(pattern_5_1,
-                                                pattern_5_2,
-                                                pattern_5_3))) + 1 %% 2]
          
          
          
   ) %>% 
   ungroup()  
 
-#  aaaa      ....      aaaa      ....
-# b    c    .    c    .    c    b    c
-# b    c    .    c    .    c    b    c
-#  dddd      ....      ....      dddd
-# e    f    .    f    .    f    .    f
-# e    f    .    f    .    f    .    f
-#  gggg      ....      ....      ....
- 
-
-# got a (compare 1 and 7)
-# got g (compare 4 with 6 lines)
-
-#     0:     1:DONE  2:      3:      4:DONE
-#      aaaa    ....    aaaa    aaaa    ....
-#     b    c  .    c  .    c  .    c  b    c
-#     b    c  .    c  .    c  .    c  b    c
-#      ....    ....    dddd    dddd    dddd
-#     e    f  .    f  e    .  .    f  .    f
-#     e    f  .    f  e    .  .    f  .    f
-#      gggg    ....    gggg    gggg    ....
-#     
-
-#     5:      6:     7:DONE  8:DONE  9:    
-#      aaaa    aaaa    aaaa    aaaa    aaaa
-#     b    .  b    .  .    c  b    c  b    c
-#     b    .  b    .  .    c  b    c  b    c
-#      dddd    dddd    ....    dddd    dddd
-#     .    f  e    f  .    f  e    f  .    f
-#     .    f  e    f  .    f  e    f  .    f
-#      gggg    gggg    ....    gggg    gggg
 
 df_1 %>% 
   select(starts_with('pos'),
          starts_with('num')) %>% 
   mutate(check = str_c( pos_a, pos_g, pos_e, pos_d, pos_b, pos_c, pos_f),
-         checks = str_detect(check, '([a-z])\1')) %>% 
+         checks = str_detect(check, '([a-z]).*\1')) %>% 
   pull(checks) %>% sum()
 
 
@@ -252,7 +222,7 @@ numbers <- colnames(df_2)[1:10] %>%
   str_remove('num_') %>% 
   as.numeric()
 
-output <- input %>% 
+output_nums <- input %>% 
   separate(value, sep = ' \\| ', into = c('sig_patterns', 'output_val')) %>% 
   mutate(across(c('sig_patterns', 'output_val'),
                 str_trim)
@@ -269,23 +239,20 @@ output <- input %>%
                 ~ list(str_c(., collapse = '')))) %>% 
   unnest(output_num_1:output_num_4)
 
-df_2 %>% 
-  left_join(output, by = 'id') %>% 
-  nest(data = c(num_1, num_7, num_4, num_8, num_9, num_3, num_6, num_0, num_2, 
-                num_5)) %>% 
+ouput_nums_1 <- df_2 %>% 
+  left_join(output_nums, by = 'id') %>% 
+  nest(data = c(num_1, num_7, num_4, num_8, num_9, num_6, num_0, num_3, num_2, num_5)) %>% 
   rowwise() %>% 
-  mutate(which_1 = list(numbers[which(output_num_1 %in% data)]),
-         which_2 = list(numbers[which(output_num_2 %in% data)]),
-         which_3 = list(numbers[which(output_num_3 %in% data)]),
-         which_4 = list(numbers[which(output_num_4 %in% data)])) 
+  mutate(which_1 = (numbers[which(output_num_1 == unlist(data))]),
+         which_2 = (numbers[which(output_num_2 == data)]),
+         which_3 = (numbers[which(output_num_3 == data)]),
+         which_4 = (numbers[which(output_num_4 == data)])) %>% 
+  mutate(number = str_c(which_1, which_2, which_3, which_4, collapse = '')) %>% 
+  ungroup() %>% 
+         mutate(across(number,
+                as.numeric)) 
 
-
-
-  unnest_wider(which_1, names_sep = '_') %>% 
-  unnest_wider(which_2, names_sep = '_') %>% 
-  unnest_wider(which_3, names_sep = '_') %>% 
-  unnest_wider(which_4, names_sep = '_')
-
-
+ouput_nums_1 %>% 
+  summarise(sum(number))
 
 
