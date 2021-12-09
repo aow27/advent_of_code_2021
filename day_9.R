@@ -1,6 +1,10 @@
 library(tidyverse)
+library(tictoc)
 
-input <- tibble(value = read_lines('Data/input9.txt'))
+source('AoC functions.R')
+
+download_advent(2021,
+                9)
 
 df <- input  %>% 
   separate(value, sep = '(?<=[0-9])', into = paste0('value_', 1:nchar(input$value[1]))) %>% 
@@ -10,42 +14,59 @@ df <- input  %>%
 
 check_around <- function(df,
                          row,
-                         col){
+                         col,
+                         combined = T){
   
   row_max = nrow(df)
   col_max = ncol(df)
   
   ## Check the rows
   if(row == 1){
-    around <- df[[row + 1, col]]
+    around_row <- df[[row + 1, col]]
   } else if(row == row_max){
-    around <- df[[row - 1, col]]
+    around_row <- df[[row - 1, col]]
   } else{
-    around <- c(df[[row - 1, col]], df[[row + 1, col]])
+    around_row <- c(df[[row - 1, col]], df[[row + 1, col]])
   }
   
   ## Check the rows
   if(col == 1){
-    around <- c(around, df[[row, col + 1]])
+    around_col <- c(df[[row, col + 1]])
   } else if(col == col_max){
-    around <- c(around, df[[row, col - 1]])
+    around_col <- c(df[[row, col - 1]])
   } else{
-    around <- c(around, df[[row, col - 1]], df[[row, col + 1]])
+    around_col <- c(df[[row, col - 1]], df[[row, col + 1]])
   }
   
-  (df[[row, col]] >= around) %>% 
+  (df[[row, col]] >= around_row |
+      df[[row, col]] >= around_col) %>% 
     sum() == 0
+  
+  if(!combined) {
+    row_check <-c(row = around_row[df[[row, col]] < around_row])
+    col_check <- c(col = around_col[df[[row, col]] < around_col])
 }
 
-
+tic()
 checks <- tibble(col = rep(1:ncol(df), each = nrow(df)),
        row = rep(1:nrow(df), ncol(df))) %>% 
   rowwise() %>% 
   mutate(value = df[[row, col]],
          check = check_around(df, row, col)) %>% 
   ungroup()
+toc()
+
 
 checks %>% 
   filter(check == T) %>% 
   summarise(sum(value + 1))
   
+
+# Part 2 ------------------------------------------------------------------
+lowest_points <- checks %>% 
+  filter(check == T) 
+
+row <- lowest_points[[1,'row']]
+col <- lowest_points[[1,'col']]
+
+check_around(df, row, col, combined = F)
