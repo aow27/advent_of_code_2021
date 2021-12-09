@@ -33,7 +33,7 @@ check_around <- function(df,
     around <- c(around, df[[row, col - 1]], df[[row, col + 1]])
   }
   
-  (df[[row, col]] > around) %>% 
+  (df[[row, col]] >= around) %>% 
     sum() == 0
 }
 
