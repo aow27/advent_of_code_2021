@@ -5,17 +5,6 @@ source('AoC functions.R')
 
 download_advent(2021,10)
 
-input <- tibble(value = read_lines('[({(<(())[]>[[{[]{<()<>>
-[(()[<>])]({[<{<<[]>>(
-{([(<{}[<>[]}>{[]{[(<()>
-(((({<>}<{<{<>}{[]{[]{}
-[[<[([]))<([[{}[[()]]]
-[{[{({}]{}}([{[{{{}}([]
-{<[[]]>}<{[{[{[]{()[[[]
-[<(<(<(<{}))><([]([]()
-<{([([[(<>()){}]>(<<{{
-<{([{{}}[<[[[<>{}]]]>[]]'))
-
 bracket_value = tibble(bracket = c(')', ']', '}', '>'),
                points = c(3, 57, 1197, 25137))
 
@@ -39,19 +28,26 @@ input_2 %>%
 # Part 2 ------------------------------------------------------------------
 
 
-bracket_value = tibble(bracket = c(')', ']', '}', '>'),
-                       points = c(1, 2, 3, 4))
-
 completed_point <- input_2 %>% 
-  mutate(no_end = str_detect(value, '[\\]\\}\\>\\)]')) %>% 
-  filter(no_end == F) %>% 
-  mutate(square = str_count(value, '\\('),
-         rect = str_count(value, '\\['),
-         curly = str_count(value, '\\{'),
-         arrow = str_count(value, '\\<'),
-         
-         points = ((square*5 + rect)*5 + curly)*5 + arrow) 
+  mutate(no_end = str_detect(value, '[\\]\\}\\>\\)]'),
+         point = 0,
+         length = nchar(value)) %>% 
+  filter(no_end == F)
+
+while(sum(completed_point$length != 0)){
+  completed_point <- completed_point %>% 
+    mutate(square = str_count(value, '\\($')*1,
+           rect = str_count(value, '\\[$')*2,
+           curly = str_count(value, '\\{$')*3,
+           arrow = str_count(value, '\\<$')*4,
+           
+           point = ifelse(square + rect + curly + arrow > 0,
+                          point*5 + square + rect + curly + arrow,
+                          point),
+           value = str_remove(value, '.$'),
+           length = nchar(value))
+}
 
 completed_point %>% 
-  summarise(sum(points))
+  summarise(median(point))
 
