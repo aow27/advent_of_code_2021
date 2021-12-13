@@ -8,34 +8,6 @@ source('AoC functions.R')
 
 download_advent(2021, 12)
 
-
-input <- tibble(value = read_lines('start-A
-start-b
-A-c
-A-b
-b-d
-A-end
-b-end'))
-
-input <- tibble(value = read_lines('fs-end
-he-DX
-fs-he
-start-DX
-pj-DX
-end-zg
-zg-sl
-zg-pj
-pj-he
-RW-he
-fs-DX
-pj-RW
-zg-RW
-start-pj
-he-WI
-zg-he
-pj-fs
-start-RW'))
- 
 input <- input %>% 
   separate(value, into = c('start_node', 'last_node')) %>% 
   rbind(input %>%  
