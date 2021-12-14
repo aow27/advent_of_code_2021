@@ -45,11 +45,12 @@ check_around <- function(df,
   if(!combined) {
     row_check <-c(row = around_row[df[[row, col]] < around_row])
     col_check <- c(col = around_col[df[[row, col]] < around_col])
+  }
 }
 
 tic()
 checks <- tibble(col = rep(1:ncol(df), each = nrow(df)),
-       row = rep(1:nrow(df), ncol(df))) %>% 
+                 row = rep(1:nrow(df), ncol(df))) %>% 
   rowwise() %>% 
   mutate(value = df[[row, col]],
          check = check_around(df, row, col)) %>% 
@@ -60,7 +61,7 @@ toc()
 checks %>% 
   filter(check == T) %>% 
   summarise(sum(value + 1))
-  
+
 
 # Part 2 ------------------------------------------------------------------
 lowest_points <- checks %>% 
