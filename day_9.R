@@ -38,7 +38,7 @@ check_around <- function(df,
     around_col <- c(df[[row, col - 1]], df[[row, col + 1]])
   }
   
-  (df[[row, col]] >= around_row |
+  output <- (df[[row, col]] >= around_row |
       df[[row, col]] >= around_col) %>% 
     sum() == 0
   
@@ -46,16 +46,19 @@ check_around <- function(df,
     row_check <-c(row = around_row[df[[row, col]] < around_row])
     col_check <- c(col = around_col[df[[row, col]] < around_col])
   }
+<<<<<<< HEAD
+=======
+  
+  output
+>>>>>>> main
 }
 
-tic()
 checks <- tibble(col = rep(1:ncol(df), each = nrow(df)),
                  row = rep(1:nrow(df), ncol(df))) %>% 
   rowwise() %>% 
   mutate(value = df[[row, col]],
          check = check_around(df, row, col)) %>% 
   ungroup()
-toc()
 
 
 checks %>% 
